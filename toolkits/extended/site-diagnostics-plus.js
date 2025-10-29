@@ -141,11 +141,70 @@ const SiteDiagnosticsPlus = (() => {
       console.groupEnd();
       console.groupEnd();
     };
+
+    /* -------------------------------------------------------------------------- */
+    /*                       6. Subresource Integrity (SRI) Check                 */
+    /* -------------------------------------------------------------------------- */
+    const sriCheck = () => {
+        console.group("🔒 Subresource Integrity (SRI) Check");
+
+        const scripts = Array.from(document.querySelectorAll("script[src]"));
+        const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'));
+
+        const externalResources = [...scripts, ...styles].filter(el => {
+        const src = el.src || el.href;
+        if (!src) return false;
+        return !src.startsWith(location.origin) && !src.startsWith("/") && !src.startsWith("./");
+        });
+
+        const results = externalResources.map(el => ({
+        type: el.tagName.toLowerCase() === "script" ? "JavaScript" : "CSS",
+        url: el.src || el.href,
+        hasIntegrity: !!el.getAttribute("integrity"),
+        hasCrossorigin: !!el.getAttribute("crossorigin")
+        }));
+
+        const missingIntegrity = results.filter(r => !r.hasIntegrity);
+        const missingCrossorigin = results.filter(r => !r.hasCrossorigin);
+
+        console.log(`🌐 Total External Resources: ${results.length}`);
+        console.log(`❌ Missing integrity: ${missingIntegrity.length}`);
+        console.log(`⚠️ Missing crossorigin: ${missingCrossorigin.length}`);
+        console.log("");
+
+        if (missingIntegrity.length > 0) {
+        console.groupCollapsed("❌ Missing Integrity Attribute");
+        missingIntegrity.forEach(r => console.log(`${r.type}: ${r.url}`));
+        console.groupEnd();
+        }
+
+        if (missingCrossorigin.length > 0) {
+        console.groupCollapsed("⚠️ Missing Crossorigin Attribute");
+        missingCrossorigin.forEach(r => console.log(`${r.type}: ${r.url}`));
+        console.groupEnd();
+        }
+
+        console.group("✅ Recommendations");
+        console.log("1. Add 'integrity' attributes for all external JS and CSS files.");
+        console.log("2. Include 'crossorigin=\"anonymous\"' when using SRI.");
+        console.log("3. Use https://www.srihash.org or 'npm srihash' to generate hashes.");
+        console.log("4. Host critical resources locally or pin to specific versions.");
+        console.log("5. Avoid inline <script> tags for untrusted third-party content.");
+        console.groupEnd();
+
+        if (missingIntegrity.length === 0 && missingCrossorigin.length === 0) {
+        console.log("✅ All external scripts and styles include integrity and crossorigin attributes.");
+        } else {
+        console.warn("⚠️ Some external resources are missing integrity or crossorigin attributes. Review recommended fixes above.");
+        }
+
+        console.groupEnd();
+    };
   
     /* -------------------------------------------------------------------------- */
     /*                               Registry of Modules                          */
     /* -------------------------------------------------------------------------- */
-    const modules = { accessibility, performance: performanceTiming, storage: storageCheck, pwa, dnsTls };
+    const modules = { accessibility, performance: performanceTiming, storage: storageCheck, pwa, dnsTls, sri: sriCheck };
   
     const run = async name => {
       const mod = modules[name];

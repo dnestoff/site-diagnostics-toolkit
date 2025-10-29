@@ -31,6 +31,7 @@ It inspects accessibility, performance timing, storage security, PWA readiness, 
 | `storage`       | Inspects localStorage, sessionStorage, and cookies for security best practices |
 | `pwa`           | Checks for Service Worker and Web App Manifest to assess PWA readiness         |
 | `dnsTls`        | Tests HTTPS, DNS latency, and TLS configuration for connection health          |
+| `sri`        | Scans all external scripts and stylesheets for proper Subresource Integrity (SRI) and CORS attributes to prevent tampering          |
 
 ---
 
