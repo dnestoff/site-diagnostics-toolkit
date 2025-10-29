@@ -151,5 +151,5 @@ const SiteDiagnostics = (() => {
     };
   
     return { run, runAll, list: () => Object.keys(modules) };
-  })();
+})();
   
